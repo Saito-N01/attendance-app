@@ -75,7 +75,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Tokyo',
 
     /*
     |--------------------------------------------------------------------------
@@ -161,16 +161,16 @@ return [
     */
 
     'providers' => ServiceProvider::defaultProviders()->merge([
-        /*
+            /*
              * Package Service Providers...
              */
 
-        /*
+            /*
              * Application Service Providers...
              */
         AppServiceProvider::class,
         AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+            // App\Providers\BroadcastServiceProvider::class,
         EventServiceProvider::class,
         RouteServiceProvider::class,
         FortifyServiceProvider::class,
