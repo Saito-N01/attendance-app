@@ -20,6 +20,10 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('admin_status')->default(false)->after('password');
+        });
     }
 
     /**
@@ -28,5 +32,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('admin_status');
+        });
     }
 };
