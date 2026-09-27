@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -32,5 +33,10 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(function () {
             return view('user.user-login');
         });
+
+        $this->app->singleton(
+            \Laravel\Fortify\Http\Requests\LoginRequest::class,
+            LoginRequest::class
+        );
     }
 }
