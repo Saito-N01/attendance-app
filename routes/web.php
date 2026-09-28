@@ -31,4 +31,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/attendance', [AttendanceRecordController::class, 'create']);
     Route::post('/attendance', [AttendanceRecordController::class, 'store']);
+    Route::get('/attendance/list', [AttendanceRecordController::class, 'index']);
 });
