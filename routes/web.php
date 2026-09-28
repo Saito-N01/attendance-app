@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAuthenticatedSessionController;
+use App\Http\Controllers\AttendanceRecordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// 管理者
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('login', [AdminAuthenticatedSessionController::class, 'create'])->name('login');
@@ -23,4 +25,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])->name('logout');
     });
+});
+
+// 一般ユーザー
+Route::middleware('auth')->group(function () {
+    Route::get('/attendance', [AttendanceRecordController::class, 'create']);
+    Route::post('/attendance', [AttendanceRecordController::class, 'store']);
 });

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ApplicationStatus;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -53,5 +54,20 @@ class AttendanceRecord extends Model
     {
         return $this->hasOne(Application::class)
             ->where('status', ApplicationStatus::Pending);
+    }
+
+    protected function status(): Attribute
+    {
+        return Attribute::make(get: function () {
+            if (is_null($this->clock_in)) {
+                return '勤務外';
+            }
+            if (! is_null($this->clock_out)) {
+                return '退勤済';
+            }
+            $onBreak = $this->breaks->contains(fn ($b) => is_null($b->break_out));
+
+            return $onBreak ? '休憩中' : '出勤中';
+        });
     }
 }
