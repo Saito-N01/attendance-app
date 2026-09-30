@@ -32,4 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance', [AttendanceRecordController::class, 'create']);
     Route::post('/attendance', [AttendanceRecordController::class, 'store']);
     Route::get('/attendance/list', [AttendanceRecordController::class, 'index']);
+    Route::get('/attendance/detail/{id}', [AttendanceRecordController::class, 'show'])->whereNumber('id');
+    Route::get('/attendance/{id}', [AttendanceRecordController::class, 'show'])->whereNumber('id');
+    Route::post('/attendance/{id}', [AttendanceRecordController::class, 'update'])->whereNumber('id');
 });

@@ -44,8 +44,8 @@
                     <div class="error-message">
                         <div></div>
                         <div class="error-message__item">
-                            @error('new_clock_in') {{ $message }} @enderror
-                            @error('new_clock_out') {{ $message }} @enderror
+                            @error('new_clock_in') <p>{{ $message }}</p> @enderror
+                            @error('new_clock_out') <p>{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -156,7 +156,7 @@
                 </div>
 
                 <div class="form__button">
-                    <p class="readonly-message">承認待ちのため修正できません</p>
+                    <p class="readonly-message">承認待ちのため修正できません。</p>
                 </div>
             @endif
 
