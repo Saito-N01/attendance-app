@@ -48,9 +48,6 @@ class AttendanceRecord extends Model
         return $this->hasMany(Application::class);
     }
 
-    /**
-     * 承認待ちの修正申請のみ。
-     */
     public function pendingApplication(): HasOne
     {
         return $this->hasOne(Application::class)
@@ -80,6 +77,7 @@ class AttendanceRecord extends Model
             ->sum(fn ($b) => Carbon::parse($b->break_out)->diffInMinutes(Carbon::parse($b->break_in)));
     }
 
+    // 分を時間表示に変換する
     private function minutesToTime(int $minutes): string
     {
         return sprintf('%02d:%02d:00', intdiv($minutes, 60), $minutes % 60);
