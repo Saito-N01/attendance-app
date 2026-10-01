@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
-use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Application extends Model
 {
+    public const STATUS_PENDING = 0;   // 承認待ち
+
+    public const STATUS_APPROVED = 1;  // 承認済み
+
     /**
      * @var list<string>
      */
@@ -30,7 +33,6 @@ class Application extends Model
     {
         return [
             'date' => 'date',
-            'status' => ApplicationStatus::class,
             'approved_at' => 'datetime',
         ];
     }

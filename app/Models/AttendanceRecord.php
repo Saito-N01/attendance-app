@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\ApplicationStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -51,7 +50,7 @@ class AttendanceRecord extends Model
     public function pendingApplication(): HasOne
     {
         return $this->hasOne(Application::class)
-            ->where('status', ApplicationStatus::Pending);
+            ->where('status', Application::STATUS_PENDING);
     }
 
     protected function status(): Attribute

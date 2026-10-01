@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
+use App\Http\Controllers\StampCorrectionRequestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,4 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance/detail/{id}', [AttendanceRecordController::class, 'show'])->whereNumber('id');
     Route::get('/attendance/{id}', [AttendanceRecordController::class, 'show'])->whereNumber('id');
     Route::post('/attendance/{id}', [AttendanceRecordController::class, 'update'])->whereNumber('id');
+    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index']);
+    Route::get('/application/{id}', [StampCorrectionRequestController::class, 'show'])->whereNumber('id');
 });
