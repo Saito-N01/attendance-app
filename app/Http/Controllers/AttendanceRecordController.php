@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ApplicationStatus;
 use App\Http\Requests\UpdateAttendanceRequest;
+use App\Models\Application;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -208,7 +208,7 @@ class AttendanceRecordController extends Controller
                 'new_clock_in' => $request->input('new_clock_in'),
                 'new_clock_out' => $request->input('new_clock_out'),
                 'comment' => $request->input('comment'),
-                'status' => ApplicationStatus::Pending,
+                'status' => Application::STATUS_PENDING,
             ]);
 
             foreach ((array) $request->input('new_break_in', []) as $i => $in) {
