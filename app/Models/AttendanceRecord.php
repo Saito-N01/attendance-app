@@ -25,12 +25,9 @@ class AttendanceRecord extends Model
     /**
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-        ];
-    }
+    protected $casts = [
+        'date' => 'date',
+    ];
 
     public function user(): BelongsTo
     {
