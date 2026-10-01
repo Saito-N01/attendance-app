@@ -29,13 +29,10 @@ class Application extends Model
     /**
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-            'approved_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'date' => 'date',
+        'approved_at' => 'datetime',
+    ];
 
     public function attendanceRecord(): BelongsTo
     {
