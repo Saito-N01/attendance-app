@@ -9,6 +9,11 @@
         <div class="detail__header">
             <h1 class="content__header--item">勤怠詳細</h1>
         </div>
+
+        @if (session('message'))
+            <p class="flash-message">{{ session('message') }}</p>
+        @endif
+
         <form class="form" action="{{ url('/attendance/' . $attendanceRecord['id']) }}" method="post">
             @csrf
                 <div class="form__content">
@@ -43,10 +48,10 @@
                         <div></div>
                         <div class="error-message__item">
                             @error('new_clock_in')
-                                {{ $message }}
+                                <p>{{ $message }}</p>
                             @enderror
                             @error('new_clock_out')
-                                {{ $message }}
+                                <p>{{ $message }}</p>
                             @enderror
                         </div>
                     </div>

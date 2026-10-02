@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\AttendanceRecordController as AdminAttendanceRecordController;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Models\Application;
 use App\Models\AttendanceRecord;
@@ -191,6 +192,11 @@ class AttendanceRecordController extends Controller
 
     public function update(UpdateAttendanceRequest $request, $id)
     {
+        // 管理者は承認フローを通さず直接修正する
+        if (auth()->user()->admin_status) {
+            return app(AdminAttendanceRecordController::class)->update($request, $id);
+        }
+
         // 自分の勤怠のみ
         $record = AttendanceRecord::with('pendingApplication')
             ->where('user_id', auth()->id())

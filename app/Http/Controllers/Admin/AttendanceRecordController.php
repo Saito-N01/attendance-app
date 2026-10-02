@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateAttendanceRequest;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -41,5 +44,68 @@ class AttendanceRecordController extends Controller
         return $isValid
             ? Carbon::createFromFormat('!Y-m-d', $date)
             : now()->startOfDay();
+    }
+
+    public function show(int $id): View
+    {
+        $record = AttendanceRecord::with(['user', 'breaks'])->findOrFail($id);
+        $date = Carbon::parse($record->date);
+
+        $breaks = $record->breaks->map(fn ($break) => [
+            'break_in' => $this->formatTime($break->break_in),
+            'break_out' => $this->formatTime($break->break_out),
+        ])->all();
+
+        // バリデーションエラーで戻ってきたときは、入力内容を復元する（Blade側はold()を使わないため）
+        if (old('new_break_in') !== null) {
+            $breaks = [];
+            foreach (old('new_break_in') as $i => $in) {
+                $breaks[] = ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''];
+            }
+            // 末尾の空行はBladeが追加入力用に出すので取り除く
+            while ($breaks && $breaks[array_key_last($breaks)] === ['break_in' => '', 'break_out' => '']) {
+                array_pop($breaks);
+            }
+        }
+
+        return view('admin.admin-detail', [
+            'user' => $record->user,
+            'attendanceRecord' => [
+                'id' => $record->id,
+                'year' => $date->isoFormat('YYYY年'),
+                'date' => $date->isoFormat('M月D日'),
+                'clock_in' => old('new_clock_in', $this->formatTime($record->clock_in)),
+                'clock_out' => old('new_clock_out', $this->formatTime($record->clock_out)),
+                'breaks' => $breaks,
+                'comment' => old('comment', $record->comment),
+            ],
+        ]);
+    }
+
+    public function update(UpdateAttendanceRequest $request, int $id): RedirectResponse
+    {
+        $record = AttendanceRecord::findOrFail($id);
+
+        DB::transaction(function () use ($request, $record) {
+            $record->update([
+                'clock_in' => $request->input('new_clock_in'),
+                'clock_out' => $request->input('new_clock_out'),
+                'comment' => $request->input('comment'),
+            ]);
+
+            $record->breaks()->delete();
+
+            collect($request->input('new_break_in', []))
+                ->map(fn ($in, $i) => ['break_in' => $in, 'break_out' => $request->input("new_break_out.$i")])
+                ->reject(fn ($break) => $break['break_in'] === null && $break['break_out'] === null)
+                ->each(fn ($break) => $record->breaks()->create($break));
+        });
+
+        return redirect("/admin/attendance/{$id}")->with('message', '勤怠を修正しました。');
+    }
+
+    private function formatTime(?string $time): string
+    {
+        return $time ? Carbon::parse($time)->format('H:i') : '';
     }
 }
