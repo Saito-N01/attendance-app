@@ -27,6 +27,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::get('attendance/list', [AdminAttendanceRecordController::class, 'index'])->name('attendance.list');
+        Route::get('attendance/{id}', [AdminAttendanceRecordController::class, 'show'])->whereNumber('id')->name('attendance.show');
     });
 });
 

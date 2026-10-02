@@ -78,7 +78,7 @@
     padding: 5px;
     text-align: center;
     width: 80px;
-    min-width: 80px;
+    min-width: 100px;
 }
 
 .form__textarea {
@@ -224,3 +224,11 @@
 }
 
 /* ───────────────────────────────────────────────────────────────── */
+
+/* 修正完了メッセージ */
+.flash-message {
+    color: #0A7D3E;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    max-width: 100vh;
+}
