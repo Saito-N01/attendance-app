@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AttendanceRecordController as AdminAttendanceRecordController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\StampCorrectionRequestController;
@@ -28,6 +29,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::get('attendance/list', [AdminAttendanceRecordController::class, 'index'])->name('attendance.list');
         Route::get('attendance/{id}', [AdminAttendanceRecordController::class, 'show'])->whereNumber('id')->name('attendance.show');
+        Route::get('staff/list', [StaffController::class, 'index'])->name('staff.list');
     });
 });
 
