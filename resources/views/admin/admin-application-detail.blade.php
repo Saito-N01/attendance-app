@@ -21,34 +21,34 @@
             <div class="applied-form__group">
                 <label class="applied-form__header">日付</label>
                 <div class="applied-form__input-group">
-                    <input class="applied-form__input" type="text" value="{{ $application->new_date->format('Y年') }}" readonly>
-                    <input class="applied-form__input"  type="text"  value="{{ $application->new_date->format('n月j日') }}" readonly>
+                    <input class="applied-form__input" type="text" value="{{ $application->date->format('Y年') }}" readonly>
+                    <input class="applied-form__input"  type="text"  value="{{ $application->date->format('n月j日') }}" readonly>
                 </div>
             </div>
             <div class="applied-form__group">
                 <label class="applied-form__header">出勤・退勤</label>
                 <div class="applied-form__input-group">
-                    <input class="applied-form__input" type="text" value="{{ $application->new_clock_in }}" readonly>
+                    <input class="applied-form__input" type="text" value="{{ $application->new_clock_in ? \Carbon\Carbon::parse($application->new_clock_in)->format('H:i') : '' }}" readonly>
                     <p class="wavy-line">〜</p>
-                    <input class="applied-form__input" type="text" value="{{ $application->new_clock_out }}" readonly>
+                    <input class="applied-form__input" type="text" value="{{ $application->new_clock_out ? \Carbon\Carbon::parse($application->new_clock_out)->format('H:i') : '' }}" readonly>
                 </div>
             </div>
             {{-- 休憩は「休憩」「休憩2」「休憩3」…とセクションを分けて表示 --}}
-            @foreach($application->proposalBreaks as $index => $break)
+            @foreach($application->breaks as $index => $break)
                 <div class="applied-form__group">
                     <label class="applied-form__header">{{ $index === 0 ? '休憩' : '休憩' . ($index + 1) }}</label>
                     <div class="applied-form__input-group">
                         <input class="applied-form__input readonly" type="text" name="new_break_in[]"
-                            value="{{ \Carbon\Carbon::parse($break->break_in)->format('H:i') }}" readonly>
+                            value="{{ \Carbon\Carbon::parse($break->new_break_in)->format('H:i') }}" readonly>
                         <p>〜</p>
                         <input class="applied-form__input readonly" type="text" name="new_break_out[]"
-                            value="{{ $break->break_out ? \Carbon\Carbon::parse($break->break_out)->format('H:i') : '' }}" readonly>
+                            value="{{ $break->new_break_out ? \Carbon\Carbon::parse($break->new_break_out)->format('H:i') : '' }}" readonly>
                     </div>
                 </div>
             @endforeach
             {{-- Figma に合わせ、末尾に空の休憩スロットを1つ表示 --}}
             <div class="applied-form__group">
-                <label class="applied-form__header">{{ $application->proposalBreaks->count() === 0 ? '休憩' : '休憩' . ($application->proposalBreaks->count() + 1) }}</label>
+                <label class="applied-form__header">{{ $application->breaks->count() === 0 ? '休憩' : '休憩' . ($application->breaks->count() + 1) }}</label>
                 <div class="applied-form__input-group">
                     <input class="applied-form__input readonly" type="text" value="" readonly>
                     <p>〜</p>
