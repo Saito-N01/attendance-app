@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -47,5 +48,17 @@ class Application extends Model
     public function breaks(): HasMany
     {
         return $this->hasMany(ApplicationBreak::class);
+    }
+
+    protected function approvalStatus(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->status === self::STATUS_PENDING ? '承認待ち' : '承認済み',
+        );
+    }
+
+    protected function applicationDate(): Attribute
+    {
+        return Attribute::make(get: fn () => $this->created_at);
     }
 }

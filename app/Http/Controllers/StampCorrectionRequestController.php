@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCorrectionRequestController;
 use App\Models\Application;
 use Carbon\Carbon;
 
@@ -10,6 +11,11 @@ class StampCorrectionRequestController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        // 管理者は全ユーザーの申請一覧を表示する
+        if ($user->admin_status) {
+            return app(AdminStampCorrectionRequestController::class)->index();
+        }
 
         $formattedApplications = Application::where('user_id', $user->id)
             ->orderByDesc('created_at')
