@@ -30,6 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('attendance/list', [AdminAttendanceRecordController::class, 'index'])->name('attendance.list');
         Route::get('attendance/{id}', [AdminAttendanceRecordController::class, 'show'])->whereNumber('id')->name('attendance.show');
         Route::get('staff/list', [StaffController::class, 'index'])->name('staff.list');
+        Route::get('attendance/staff/{id}', [StaffController::class, 'attendance'])->whereNumber('id')->name('attendance.staff');
     });
 });
 
