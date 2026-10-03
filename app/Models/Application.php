@@ -47,7 +47,7 @@ class Application extends Model
 
     public function breaks(): HasMany
     {
-        return $this->hasMany(ApplicationBreak::class);
+        return $this->hasMany(ApplicationBreak::class)->orderBy('id');
     }
 
     protected function approvalStatus(): Attribute

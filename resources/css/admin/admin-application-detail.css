@@ -69,7 +69,7 @@
     outline: none;
     padding: 5px;
     text-align: center;
-    width: 80px;
+    width: 100px;
 }
 
 .applied-form__textarea {
@@ -121,3 +121,4 @@
     margin: 0;
     padding: 0 0.5rem;
 }
+

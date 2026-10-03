@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AttendanceRecordController as AdminAttendanceRecordController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCorrectionRequestController;
 use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\StampCorrectionRequestController;
@@ -44,4 +45,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/{id}', [AttendanceRecordController::class, 'update'])->whereNumber('id');
     Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index']);
     Route::get('/application/{id}', [StampCorrectionRequestController::class, 'show'])->whereNumber('id');
+});
+
+// 管理者（申請の詳細確認・承認）
+Route::middleware('admin')->group(function () {
+    Route::get('/stamp_correction_request/approve/{id}', [AdminStampCorrectionRequestController::class, 'show'])->whereNumber('id');
+    Route::post('/stamp_correction_request/approve/{id}', [AdminStampCorrectionRequestController::class, 'approve'])->whereNumber('id');
 });
