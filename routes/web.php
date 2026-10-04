@@ -36,7 +36,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // 一般ユーザー
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [AttendanceRecordController::class, 'create']);
     Route::post('/attendance', [AttendanceRecordController::class, 'store']);
     Route::get('/attendance/list', [AttendanceRecordController::class, 'index']);

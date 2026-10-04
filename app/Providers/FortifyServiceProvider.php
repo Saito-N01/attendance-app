@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Requests\LoginRequest;
+use App\Http\Responses\EmailVerificationNotificationSentResponse;
 use App\Http\Responses\LogoutResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationNotificationSentResponseContract;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
 
@@ -42,5 +44,14 @@ class FortifyServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
+
+        Fortify::verifyEmailView(function () {
+            return view('auth.verify-email');
+        });
+
+        $this->app->singleton(
+            EmailVerificationNotificationSentResponseContract::class,
+            EmailVerificationNotificationSentResponse::class
+        );
     }
 }
