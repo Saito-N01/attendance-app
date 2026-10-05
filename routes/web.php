@@ -47,8 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/application/{id}', [StampCorrectionRequestController::class, 'show'])->whereNumber('id');
 });
 
-// 管理者（申請の詳細確認・承認）
+// 管理者（申請の詳細確認・承認・エクスポート）
 Route::middleware('admin')->group(function () {
     Route::get('/stamp_correction_request/approve/{id}', [AdminStampCorrectionRequestController::class, 'show'])->whereNumber('id');
     Route::post('/stamp_correction_request/approve/{id}', [AdminStampCorrectionRequestController::class, 'approve'])->whereNumber('id');
+    Route::post('/export', [StaffController::class, 'export']);
 });
