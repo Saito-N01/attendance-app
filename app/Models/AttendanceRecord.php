@@ -87,16 +87,24 @@ class AttendanceRecord extends Model
             : null);
     }
 
-    // 退勤済のときだけ勤務合計（退勤 − 出勤 − 休憩）
-    protected function totalTime(): Attribute
+    // 退勤済のときだけ勤務時間（分）。退勤 − 出勤 − 休憩
+    protected function workMinutes(): Attribute
     {
-        return Attribute::make(get: function () {
+        return Attribute::make(get: function (): ?int {
             if (! $this->clock_in || ! $this->clock_out) {
                 return null;
             }
-            $worked = Carbon::parse($this->clock_out)->diffInMinutes(Carbon::parse($this->clock_in));
 
-            return $this->minutesToTime($worked - $this->breakMinutes());
+            return Carbon::parse($this->clock_out)->diffInMinutes(Carbon::parse($this->clock_in))
+                - $this->breakMinutes();
         });
+    }
+
+    // 退勤済のときだけ勤務合計（"HH:MM:00"）
+    protected function totalTime(): Attribute
+    {
+        return Attribute::make(get: fn () => is_null($this->work_minutes)
+            ? null
+            : $this->minutesToTime($this->work_minutes));
     }
 }

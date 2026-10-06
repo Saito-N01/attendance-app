@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCorrectionRequestController;
 use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\StampCorrectionRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/attendance/{id}', [AttendanceRecordController::class, 'update'])->whereNumber('id');
     Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index']);
     Route::get('/application/{id}', [StampCorrectionRequestController::class, 'show'])->whereNumber('id');
+    Route::get('/attendance/report', [AttendanceReportController::class, 'index']);
 });
 
 // 管理者（申請の詳細確認・承認・エクスポート）
