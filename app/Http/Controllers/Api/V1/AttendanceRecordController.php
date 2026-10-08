@@ -22,11 +22,19 @@ class AttendanceRecordController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
+        // breaks は total_time / total_break_time の計算に使うため eager load する（N+1 防止）
         $attendanceRecords = AttendanceRecord::with(['user', 'breaks'])
             ->latest('date')
             ->paginate(20);
 
-        return AttendanceRecordResource::collection($attendanceRecords);
+        $resources = AttendanceRecordResource::collection($attendanceRecords);
+
+        // ただし一覧のレスポンスには breaks を出さない（詳細APIのみ）
+        $resources->collection->each(
+            fn (AttendanceRecordResource $resource) => $resource->withoutBreaks()
+        );
+
+        return $resources;
     }
 
     /**
