@@ -11,6 +11,9 @@ use Illuminate\View\View;
 
 class StampCorrectionRequestController extends Controller
 {
+    /**
+     * 全ユーザーの申請一覧（新しい順）。申請者と勤怠を eager load する（N+1 防止）。
+     */
     public function index(): View
     {
         $applications = Application::with(['user', 'attendanceRecord'])
@@ -20,6 +23,11 @@ class StampCorrectionRequestController extends Controller
         return view('admin.admin-application-list', ['applications' => $applications]);
     }
 
+    /**
+     * 申請の詳細（承認前の確認画面）。
+     *
+     * @param  int  $id  申請ID
+     */
     public function show(int $id): View
     {
         $application = Application::with(['user', 'breaks'])->findOrFail($id);
@@ -30,6 +38,12 @@ class StampCorrectionRequestController extends Controller
         ]);
     }
 
+    /**
+     * 申請を承認し、勤怠本体と休憩を申請内容に置き換える。
+     * 二重承認を防ぐため、行をロックして状態を確認してから、1つのトランザクションで更新する。
+     *
+     * @param  int  $id  申請ID
+     */
     public function approve(int $id): RedirectResponse
     {
         DB::transaction(function () use ($id) {

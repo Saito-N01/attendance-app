@@ -5,10 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCorrectionRequestController;
 use App\Models\Application;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class StampCorrectionRequestController extends Controller
 {
-    public function index()
+    /**
+     * 申請一覧。一般ユーザーは自分の申請（新しい順）、管理者は全ユーザーの申請を表示する。
+     */
+    public function index(): View
     {
         $user = auth()->user();
 
@@ -34,7 +39,12 @@ class StampCorrectionRequestController extends Controller
         ]);
     }
 
-    public function show($id)
+    /**
+     * 申請から、対応する勤怠詳細へリダイレクトする。他人の申請は 404。
+     *
+     * @param  int  $id  申請ID
+     */
+    public function show(int $id): RedirectResponse
     {
         // 自分の申請のみ（他人のIDは404）
         $application = Application::where('user_id', auth()->id())->findOrFail($id);

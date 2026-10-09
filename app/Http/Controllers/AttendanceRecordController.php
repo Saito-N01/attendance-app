@@ -8,13 +8,18 @@ use App\Models\Application;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class AttendanceRecordController extends Controller
 {
-    public function create()
+    /**
+     * 打刻画面を表示する。今日の勤怠から現在のステータス（勤務外／出勤中／休憩中／退勤済）を求めて渡す。
+     */
+    public function create(): View
     {
         $now = Carbon::now();
         $user = auth()->user();
@@ -33,7 +38,13 @@ class AttendanceRecordController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * 打刻する。action（clock_in / break_in / break_out / clock_out）に応じた処理を、
+     * 今日の勤怠に対して行う。現在のステータスで許されない打刻は何もしない。
+     *
+     * @param  Request  $request  action を含むリクエスト
+     */
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'action' => ['required', 'in:clock_in,break_in,break_out,clock_out'],
@@ -84,7 +95,13 @@ class AttendanceRecordController extends Controller
         }
     }
 
-    public function index(Request $request)
+    /**
+     * ログインユーザーの月次勤怠一覧。?date=YYYY-MM の月の全日付を行にして、勤怠がある日だけ値を入れる。
+     * 休憩の合計を求めるため breaks を eager load する（N+1 防止）。
+     *
+     * @param  Request  $request  date（YYYY-MM）。不正または未指定なら当月
+     */
+    public function index(Request $request): View
     {
         $date = $this->resolveMonth($request->query('date'));
         $start = $date->copy()->startOfMonth();
@@ -94,7 +111,7 @@ class AttendanceRecordController extends Controller
             ->where('user_id', auth()->id())
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->get()
-            ->keyBy(fn ($record) => Carbon::parse($record->date)->toDateString());
+            ->keyBy(fn (AttendanceRecord $record) => Carbon::parse($record->date)->toDateString());
 
         $formattedAttendanceRecords = collect(CarbonPeriod::create($start, $end))
             ->map(function (Carbon $day) use ($records) {
@@ -128,7 +145,13 @@ class AttendanceRecordController extends Controller
             : now()->startOfMonth();
     }
 
-    public function show($id)
+    /**
+     * 勤怠詳細を表示する。承認待ちの申請があれば申請内容を閲覧のみで、なければ現在の勤怠を表示する。
+     * 管理者が踏んだ場合は管理者用の詳細へリダイレクトする。他人の勤怠は 404。
+     *
+     * @param  int  $id  勤怠ID
+     */
+    public function show(int $id): View|RedirectResponse
     {
         $user = auth()->user();
 
@@ -164,14 +187,14 @@ class AttendanceRecordController extends Controller
 
             // バリデーションエラーで戻ってきたときは、入力内容を復元する（Blade側はold()を使わないため）
             if (old('new_break_in') !== null) {
-                $breaks = [];
-                foreach (old('new_break_in') as $i => $in) {
-                    $breaks[] = ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''];
-                }
-                // 末尾の空行はBladeが追加入力用に出すので取り除く
-                while ($breaks && $breaks[array_key_last($breaks)] === ['break_in' => '', 'break_out' => '']) {
-                    array_pop($breaks);
-                }
+                $breaks = collect(old('new_break_in'))
+                    ->map(fn (mixed $in, int|string $i) => ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''])
+                    // 末尾の空行はBladeが追加入力用に出すので取り除く（後ろから空行を読み飛ばす）
+                    ->reverse()
+                    ->skipWhile(fn (array $break) => $break === ['break_in' => '', 'break_out' => ''])
+                    ->reverse()
+                    ->values()
+                    ->all();
             }
         }
 
@@ -190,7 +213,15 @@ class AttendanceRecordController extends Controller
         ]);
     }
 
-    public function update(UpdateAttendanceRequest $request, $id)
+    /**
+     * 修正申請を作成する（承認待ちとして保存）。承認待ちがすでにあれば新規申請は受け付けない。
+     * 管理者は承認フローを通さず、管理者用の更新処理で直接修正する。
+     * 申請と休憩は1つのトランザクションで保存する。
+     *
+     * @param  UpdateAttendanceRequest  $request  検証済みの修正内容
+     * @param  int  $id  勤怠ID
+     */
+    public function update(UpdateAttendanceRequest $request, int $id): RedirectResponse
     {
         // 管理者は承認フローを通さず直接修正する
         if (auth()->user()->admin_status) {
@@ -217,13 +248,13 @@ class AttendanceRecordController extends Controller
                 'status' => Application::STATUS_PENDING,
             ]);
 
-            foreach ((array) $request->input('new_break_in', []) as $i => $in) {
-                $out = $request->input("new_break_out.$i");
-                if ($in === null && $out === null) {
-                    continue; // 追加用の空行は保存しない
-                }
-                $application->breaks()->create(['new_break_in' => $in, 'new_break_out' => $out]);
-            }
+            $application->breaks()->createMany(
+                collect((array) $request->input('new_break_in', []))
+                    ->map(fn (mixed $in, int|string $i) => ['new_break_in' => $in, 'new_break_out' => $request->input("new_break_out.$i")])
+                    // 追加用の空行は保存しない
+                    ->reject(fn (array $break) => $break['new_break_in'] === null && $break['new_break_out'] === null)
+                    ->all()
+            );
         });
 
         return redirect("/attendance/detail/{$id}");

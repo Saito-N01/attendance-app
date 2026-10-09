@@ -15,6 +15,12 @@ use Illuminate\View\View;
 
 class AttendanceRecordController extends Controller
 {
+    /**
+     * 日次の勤怠一覧（全スタッフ）。?date=YYYY-MM-DD の日の勤怠と、そのスタッフを取得する。
+     * 休憩の合計を求めるため breaks を eager load する（N+1 防止）。
+     *
+     * @param  Request  $request  date（YYYY-MM-DD）。不正または未指定なら今日
+     */
     public function index(Request $request): View
     {
         $date = $this->resolveDate($request->query('date'));
@@ -46,6 +52,11 @@ class AttendanceRecordController extends Controller
             : now()->startOfDay();
     }
 
+    /**
+     * 勤怠詳細（管理者用）。バリデーションエラーで戻ってきたときは、入力内容を復元して表示する。
+     *
+     * @param  int  $id  勤怠ID
+     */
     public function show(int $id): View
     {
         $record = AttendanceRecord::with(['user', 'breaks'])->findOrFail($id);
@@ -58,14 +69,14 @@ class AttendanceRecordController extends Controller
 
         // バリデーションエラーで戻ってきたときは、入力内容を復元する（Blade側はold()を使わないため）
         if (old('new_break_in') !== null) {
-            $breaks = [];
-            foreach (old('new_break_in') as $i => $in) {
-                $breaks[] = ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''];
-            }
-            // 末尾の空行はBladeが追加入力用に出すので取り除く
-            while ($breaks && $breaks[array_key_last($breaks)] === ['break_in' => '', 'break_out' => '']) {
-                array_pop($breaks);
-            }
+            $breaks = collect(old('new_break_in'))
+                ->map(fn (mixed $in, int|string $i) => ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''])
+                // 末尾の空行はBladeが追加入力用に出すので取り除く（後ろから空行を読み飛ばす）
+                ->reverse()
+                ->skipWhile(fn (array $break) => $break === ['break_in' => '', 'break_out' => ''])
+                ->reverse()
+                ->values()
+                ->all();
         }
 
         return view('admin.admin-detail', [
@@ -82,6 +93,13 @@ class AttendanceRecordController extends Controller
         ]);
     }
 
+    /**
+     * 勤怠を直接修正する（承認フローなし）。出退勤・備考を更新し、休憩は入力内容で置き換える。
+     * 更新と休憩の入れ替えは1つのトランザクションで行う。
+     *
+     * @param  UpdateAttendanceRequest  $request  検証済みの修正内容
+     * @param  int  $id  勤怠ID
+     */
     public function update(UpdateAttendanceRequest $request, int $id): RedirectResponse
     {
         $record = AttendanceRecord::findOrFail($id);

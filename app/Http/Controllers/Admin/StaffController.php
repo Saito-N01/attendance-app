@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StaffController extends Controller
 {
+    /**
+     * スタッフ一覧（管理者以外のユーザー）。
+     */
     public function index(): View
     {
         $users = User::where('admin_status', false)
@@ -25,6 +28,12 @@ class StaffController extends Controller
         return view('admin.staff-list', ['users' => $users]);
     }
 
+    /**
+     * スタッフ別の月次勤怠一覧。
+     *
+     * @param  Request  $request  date（YYYY-MM）。不正または未指定なら当月
+     * @param  int  $id  スタッフ（ユーザー）ID。管理者のIDは 404
+     */
     public function attendance(Request $request, int $id): View
     {
         $user = User::where('admin_status', false)->findOrFail($id);
@@ -40,6 +49,11 @@ class StaffController extends Controller
         ]);
     }
 
+    /**
+     * スタッフ別の月次勤怠をCSVでダウンロードする（Excel用にBOM付きUTF-8）。
+     *
+     * @param  ExportAttendanceRequest  $request  user_id と year_month（YYYY-MM）
+     */
     public function export(ExportAttendanceRequest $request): StreamedResponse
     {
         $user = User::where('admin_status', false)->findOrFail($request->validated('user_id'));
@@ -53,7 +67,8 @@ class StaffController extends Controller
             fwrite($out, "\xEF\xBB\xBF"); // Excel用のBOM
             fputcsv($out, ['日付', '出勤', '退勤', '休憩', '合計']);
 
-            foreach ($rows as $row) {
+            // each() はコールバックが false を返すと打ち切るため、fputcsv の戻り値は返さない
+            $rows->each(function (array $row) use ($out): void {
                 fputcsv($out, [
                     $row['date'],
                     $row['clock_in'],
@@ -61,7 +76,7 @@ class StaffController extends Controller
                     $this->formatDuration($row['total_break_time']),
                     $this->formatDuration($row['total_time']),
                 ]);
-            }
+            });
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -77,7 +92,12 @@ class StaffController extends Controller
             : now()->startOfMonth();
     }
 
-    // 月内の全日付を行にして、勤怠がある日は値を入れる（画面とCSVで共用）
+    /**
+     * 月内の全日付を行にして、勤怠がある日は値を入れる（画面とCSVで共用）。
+     * 休憩の合計を求めるため breaks を eager load する（N+1 防止）。
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
     private function monthlyRecords(User $user, Carbon $month): Collection
     {
         $start = $month->copy()->startOfMonth();
@@ -87,7 +107,7 @@ class StaffController extends Controller
             ->where('user_id', $user->id)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->get()
-            ->keyBy(fn ($record) => Carbon::parse($record->date)->toDateString());
+            ->keyBy(fn (AttendanceRecord $record) => Carbon::parse($record->date)->toDateString());
 
         return collect(CarbonPeriod::create($start, $end))
             ->map(function (Carbon $day) use ($records) {

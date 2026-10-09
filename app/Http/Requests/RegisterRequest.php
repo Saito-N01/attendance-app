@@ -9,12 +9,15 @@ class RegisterRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
-    public function rules()
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -24,7 +27,10 @@ class RegisterRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
         return [
             'name.required' => 'お名前を入力してください',

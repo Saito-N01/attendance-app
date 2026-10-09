@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateAttendanceRequest extends FormRequest
 {
@@ -11,6 +12,9 @@ class UpdateAttendanceRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function rules(): array
     {
         return [
@@ -24,6 +28,9 @@ class UpdateAttendanceRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
@@ -38,47 +45,57 @@ class UpdateAttendanceRequest extends FormRequest
         ];
     }
 
-    // 休憩の前後関係は、複数フィールドを見比べる必要があるためここで検証する
-    public function withValidator($validator): void
+    /**
+     * 休憩の前後関係を検証する。複数フィールドを見比べる必要があるため、ここで検証する。
+     * 休憩ごとに次を調べる（形式エラーはルールで報告済みなら重ねない）。
+     *  - 追加用の空行（開始・終了ともに未入力）は対象外
+     *  - 片方だけの入力は不適切
+     *  - 開始が出勤より前、または退勤より後は不適切
+     *  - 終了が退勤より後、または開始より前は不適切
+     */
+    public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function (Validator $validator): void {
             $clockIn = $this->toMinutes($this->input('new_clock_in'));
             $clockOut = $this->toMinutes($this->input('new_clock_out'));
             $breakIns = (array) $this->input('new_break_in', []);
             $breakOuts = (array) $this->input('new_break_out', []);
 
-            foreach (array_unique(array_merge(array_keys($breakIns), array_keys($breakOuts))) as $i) {
-                $rawIn = $breakIns[$i] ?? null;
-                $rawOut = $breakOuts[$i] ?? null;
-                if ($rawIn === null && $rawOut === null) {
-                    continue; // 追加用の空行
-                }
-
-                $in = $this->toMinutes($rawIn);
-                $out = $this->toMinutes($rawOut);
-
-                // 片方だけ入力、または形式不正（形式不正は上のルールで報告済みなら重ねない）
-                if ($in === null || $out === null) {
-                    if (! $validator->errors()->has("new_break_in.$i") && ! $validator->errors()->has("new_break_out.$i")) {
-                        $validator->errors()->add("new_break_out.$i", '休憩時間が不適切な値です');
+            collect(array_keys($breakIns))
+                ->merge(array_keys($breakOuts))
+                ->unique()
+                ->each(function (int|string $i) use ($validator, $clockIn, $clockOut, $breakIns, $breakOuts): void {
+                    $rawIn = $breakIns[$i] ?? null;
+                    $rawOut = $breakOuts[$i] ?? null;
+                    if ($rawIn === null && $rawOut === null) {
+                        return; // 追加用の空行
                     }
 
-                    continue;
-                }
+                    $in = $this->toMinutes($rawIn);
+                    $out = $this->toMinutes($rawOut);
 
-                // 休憩開始が出勤より前、または退勤より後
-                if (($clockIn !== null && $in < $clockIn) || ($clockOut !== null && $in > $clockOut)) {
-                    $validator->errors()->add("new_break_in.$i", '休憩時間が不適切な値です');
-                }
+                    // 片方だけ入力、または形式不正（形式不正は上のルールで報告済みなら重ねない）
+                    if ($in === null || $out === null) {
+                        if (! $validator->errors()->has("new_break_in.$i") && ! $validator->errors()->has("new_break_out.$i")) {
+                            $validator->errors()->add("new_break_out.$i", '休憩時間が不適切な値です');
+                        }
 
-                // 休憩終了が退勤より後
-                if ($clockOut !== null && $out > $clockOut) {
-                    $validator->errors()->add("new_break_out.$i", '休憩時間もしくは退勤時間が不適切な値です');
-                } elseif ($out < $in) {
-                    // 終了が開始より前なら不正として扱う
-                    $validator->errors()->add("new_break_out.$i", '休憩時間が不適切な値です');
-                }
-            }
+                        return;
+                    }
+
+                    // 休憩開始が出勤より前、または退勤より後
+                    if (($clockIn !== null && $in < $clockIn) || ($clockOut !== null && $in > $clockOut)) {
+                        $validator->errors()->add("new_break_in.$i", '休憩時間が不適切な値です');
+                    }
+
+                    // 休憩終了が退勤より後
+                    if ($clockOut !== null && $out > $clockOut) {
+                        $validator->errors()->add("new_break_out.$i", '休憩時間もしくは退勤時間が不適切な値です');
+                    } elseif ($out < $in) {
+                        // 終了が開始より前なら不正として扱う
+                        $validator->errors()->add("new_break_out.$i", '休憩時間が不適切な値です');
+                    }
+                });
         });
     }
 
