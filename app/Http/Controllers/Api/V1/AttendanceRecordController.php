@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\IndexAttendanceRecordRequest;
+use App\Http\Requests\Api\V1\StoreAttendanceRecordRequest;
+use App\Http\Requests\Api\V1\UpdateAttendanceRecordRequest;
 use App\Http\Resources\AttendanceRecordResource;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 /**
  * 公開API v1：勤怠（attendance-records）
@@ -92,26 +94,42 @@ class AttendanceRecordController extends Controller
     }
 
     /**
-     * 勤怠登録（AP03）。[API-03] で実装する。
+     * 勤怠登録（AP03）。user_id はリクエストボディではなく、認証ユーザーから自動で付与する。
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreAttendanceRecordRequest $request): JsonResponse
     {
-        abort(501, 'Not Implemented');
+        // $request->user()->attendanceRecords()->create() なら user_id が自動で入る
+        $attendanceRecord = $request->user()->attendanceRecords()->create($request->validated());
+
+        $attendanceRecord->load(['user', 'breaks']);
+
+        return (new AttendanceRecordResource($attendanceRecord))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
-     * 勤怠更新（AP04）。[API-03] で実装し、認可は [API-04] で追加する。
+     * 勤怠更新（AP04）。送られた項目だけを更新する（部分更新）。
+     * 認可（本人または管理者のみ）は [API-04] で追加する。
      */
-    public function update(Request $request, AttendanceRecord $attendanceRecord): JsonResponse
+    public function update(UpdateAttendanceRecordRequest $request, AttendanceRecord $attendanceRecord): AttendanceRecordResource
     {
-        abort(501, 'Not Implemented');
+        $attendanceRecord->update($request->validated());
+
+        $attendanceRecord->load(['user', 'breaks']);
+
+        return new AttendanceRecordResource($attendanceRecord);
     }
 
     /**
-     * 勤怠削除（AP05）。[API-03] で実装し、認可は [API-04] で追加する。
+     * 勤怠削除（AP05）。休憩（attendance_breaks）と修正申請（applications）は
+     * 外部キーの ON DELETE CASCADE で、DB 側が一緒に削除する。
+     * 認可（本人または管理者のみ）は [API-04] で追加する。
      */
-    public function destroy(AttendanceRecord $attendanceRecord): JsonResponse
+    public function destroy(AttendanceRecord $attendanceRecord): Response
     {
-        abort(501, 'Not Implemented');
+        $attendanceRecord->delete();
+
+        return response()->noContent();
     }
 }
