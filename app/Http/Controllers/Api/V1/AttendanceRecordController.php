@@ -110,7 +110,8 @@ class AttendanceRecordController extends Controller
 
     /**
      * 勤怠更新（AP04）。送られた項目だけを更新する（部分更新）。
-     * 認可（本人または管理者のみ）は [API-04] で追加する。
+     * 認可（本人または管理者のみ）は UpdateAttendanceRecordRequest::authorize() で
+     * AttendanceRecordPolicy@update を呼んで判定済み（入力検証より先に判定するため）。
      */
     public function update(UpdateAttendanceRecordRequest $request, AttendanceRecord $attendanceRecord): AttendanceRecordResource
     {
@@ -124,10 +125,12 @@ class AttendanceRecordController extends Controller
     /**
      * 勤怠削除（AP05）。休憩（attendance_breaks）と修正申請（applications）は
      * 外部キーの ON DELETE CASCADE で、DB 側が一緒に削除する。
-     * 認可（本人または管理者のみ）は [API-04] で追加する。
+     * 本人または管理者のみ（AttendanceRecordPolicy@delete）。拒否されると 403 の JSON になる。
      */
     public function destroy(AttendanceRecord $attendanceRecord): Response
     {
+        $this->authorize('delete', $attendanceRecord);
+
         $attendanceRecord->delete();
 
         return response()->noContent();

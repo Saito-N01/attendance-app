@@ -15,9 +15,17 @@ use Illuminate\Validation\Validator;
  */
 class UpdateAttendanceRecordRequest extends FormRequest
 {
+    /**
+     * 更新してよい人か（AttendanceRecordPolicy@update: 本人または管理者）。
+     *
+     * FormRequest は入力検証より先に authorize() を呼ぶ。ここで判定することで、
+     * 他人の勤怠に不正な値を送っても 422（入力エラー）ではなく 403 が返り、
+     * 他人の勤怠の日付が重複しているか等の情報も漏れない。
+     * false を返すと AuthorizationException が投げられ、Handler が 403 の JSON に変換する。
+     */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->route('attendanceRecord'));
     }
 
     /**
