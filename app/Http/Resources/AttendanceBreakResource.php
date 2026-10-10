@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\AttendanceBreak;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\AttendanceBreak
+ * @mixin AttendanceBreak
  */
 class AttendanceBreakResource extends JsonResource
 {

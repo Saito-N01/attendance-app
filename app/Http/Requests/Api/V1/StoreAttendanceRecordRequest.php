@@ -7,7 +7,6 @@ use Illuminate\Validation\Rule;
 
 /**
  * 勤怠登録API（POST /api/v1/attendance-records）のリクエストボディの検証。
- * エラーメッセージは機能要件 FN060 のとおり。
  */
 class StoreAttendanceRecordRequest extends FormRequest
 {

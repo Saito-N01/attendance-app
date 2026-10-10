@@ -6,7 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * 勤怠一覧API（GET /api/v1/attendance-records）のクエリパラメータの検証。
- * すべて任意（nullable）。per_page は最大100を強制する。
  */
 class IndexAttendanceRecordRequest extends FormRequest
 {

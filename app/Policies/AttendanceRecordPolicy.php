@@ -5,13 +5,6 @@ namespace App\Policies;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 
-/**
- * 勤怠（AttendanceRecord）の更新・削除の認可（公開API用）。
- *
- * 本人、または管理者（admin_status = true）だけが更新・削除できる。
- * 「ログインしているか」の確認（認証）は auth:sanctum が担当し、
- * ここでは「その人にその勤怠を操作する権限があるか」（認可）だけを見る。
- */
 class AttendanceRecordPolicy
 {
     /**

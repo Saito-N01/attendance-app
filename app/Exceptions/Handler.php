@@ -55,9 +55,9 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * api/* は Accept ヘッダーの有無にかかわらず JSON で返す。
-     * これが無いと、Accept: application/json を付け忘れたリクエストの 401 が
-     * ログイン画面へのリダイレクト（302）になってしまう。
+     * api/* は Accept ヘッダーの有無にかかわらず JSON で返すので、
+     * Accept: application/json を付け忘れたリクエストの 401 が
+     * ログイン画面へのリダイレクト（302）になってしまうのを防ぐ。
      * 401（AuthenticationException）と 422（ValidationException）はこの判定で JSON になる。
      */
     protected function shouldReturnJson($request, Throwable $e): bool
