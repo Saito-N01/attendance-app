@@ -14,19 +14,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
-/**
- * 公開API v1：勤怠（attendance-records）
- *
- * 画面用の App\Http\Controllers\AttendanceRecordController とは別物。
- * 画面用は Blade（HTML）を返し、こちらは JSON を返す。
- */
 class AttendanceRecordController extends Controller
 {
     /** 1ページあたりの件数の既定値（最大値の100は IndexAttendanceRecordRequest で強制） */
     private const DEFAULT_PER_PAGE = 20;
 
     /**
-     * 勤怠一覧（AP01）。user_id / date / month での絞り込みと、page / per_page でのページネーションに対応する。
+     * 勤怠一覧。user_id / date / month での絞り込みと、page / per_page でのページネーションに対応する。
      */
     public function index(IndexAttendanceRecordRequest $request): AnonymousResourceCollection
     {
@@ -56,7 +50,7 @@ class AttendanceRecordController extends Controller
 
         $resources = AttendanceRecordResource::collection($attendanceRecords);
 
-        // ただし一覧のレスポンスには breaks を出さない（詳細APIのみ）
+        // 一覧のレスポンスには breaks を出さない（詳細APIのみ）
         $resources->collection->each(
             fn (AttendanceRecordResource $resource) => $resource->withoutBreaks()
         );
@@ -83,7 +77,7 @@ class AttendanceRecordController extends Controller
     }
 
     /**
-     * 勤怠詳細（AP02）。存在しない ID はルートモデルバインディングが失敗し、
+     * 勤怠詳細。存在しない ID はルートモデルバインディングが失敗し、
      * Exception Handler が 404 の JSON に変換する。
      */
     public function show(AttendanceRecord $attendanceRecord): AttendanceRecordResource
@@ -94,7 +88,7 @@ class AttendanceRecordController extends Controller
     }
 
     /**
-     * 勤怠登録（AP03）。user_id はリクエストボディではなく、認証ユーザーから自動で付与する。
+     * 勤怠登録。user_id はリクエストボディではなく、認証ユーザーから自動で付与する。
      */
     public function store(StoreAttendanceRecordRequest $request): JsonResponse
     {
@@ -109,7 +103,7 @@ class AttendanceRecordController extends Controller
     }
 
     /**
-     * 勤怠更新（AP04）。送られた項目だけを更新する（部分更新）。
+     * 勤怠更新。送られた項目だけを更新する（部分更新）。
      * 認可（本人または管理者のみ）は UpdateAttendanceRecordRequest::authorize() で
      * AttendanceRecordPolicy@update を呼んで判定済み（入力検証より先に判定するため）。
      */
@@ -123,7 +117,7 @@ class AttendanceRecordController extends Controller
     }
 
     /**
-     * 勤怠削除（AP05）。休憩（attendance_breaks）と修正申請（applications）は
+     * 勤怠削除。休憩（attendance_breaks）と修正申請（applications）は
      * 外部キーの ON DELETE CASCADE で、DB 側が一緒に削除する。
      * 本人または管理者のみ（AttendanceRecordPolicy@delete）。拒否されると 403 の JSON になる。
      */

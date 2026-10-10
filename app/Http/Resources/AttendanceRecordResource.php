@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\AttendanceRecord;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -9,12 +10,12 @@ use Illuminate\Support\Str;
 /**
  * 勤怠1件分のJSON表現。一覧API（index）と詳細API（show）で共用する。
  *
- * @mixin \App\Models\AttendanceRecord
+ * @mixin AttendanceRecord
  */
 class AttendanceRecordResource extends JsonResource
 {
     /**
-     * breaks をレスポンスに含めるか。一覧API（index）では false にする。
+     * breaks をレスポンスに含めるか判定する。一覧API（index）では false にする。
      */
     private bool $includeBreaks = true;
 
@@ -57,7 +58,7 @@ class AttendanceRecordResource extends JsonResource
     }
 
     /**
-     * "08:00:00" → "08:00"（API仕様書 AP01 のレスポンス例の形式）。null はそのまま返す。
+     * "08:00:00" → "08:00"の形式にする。null はそのまま返す。
      */
     private function toHourMinute(?string $time): ?string
     {

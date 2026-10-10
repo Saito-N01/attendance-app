@@ -9,14 +9,11 @@ use Illuminate\Validation\Validator;
 
 /**
  * 勤怠更新API（PUT / PATCH /api/v1/attendance-records/{attendanceRecord}）のリクエストボディの検証。
- *
- * 部分更新に対応する。送られた項目だけを検証・更新し、未送信の項目は既存値を保持する。
- * エラーメッセージは StoreAttendanceRecordRequest（FN060）と同じ。
  */
 class UpdateAttendanceRecordRequest extends FormRequest
 {
     /**
-     * 更新してよい人か（AttendanceRecordPolicy@update: 本人または管理者）。
+     * 更新してよい人か判定する。
      *
      * FormRequest は入力検証より先に authorize() を呼ぶ。ここで判定することで、
      * 他人の勤怠に不正な値を送っても 422（入力エラー）ではなく 403 が返り、

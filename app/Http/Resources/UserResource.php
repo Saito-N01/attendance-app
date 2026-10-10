@@ -2,16 +2,17 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\User
+ * @mixin User
  */
 class UserResource extends JsonResource
 {
     /**
-     * 公開APIに出すユーザー情報（id と name のみ。メールアドレス等は出さない）
+     * 公開APIに出すユーザー情報
      *
      * @return array<string, mixed>
      */

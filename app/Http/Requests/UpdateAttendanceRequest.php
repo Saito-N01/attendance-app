@@ -35,12 +35,12 @@ class UpdateAttendanceRequest extends FormRequest
     {
         return [
             'new_clock_in.required' => '出勤時間を入力してください',
-            'new_clock_in.date_format' => '出勤時間は"H:i"形式で入力してください',
+            'new_clock_in.date_format' => '出勤時間は HH:MM 形式で入力してください',
             'new_clock_out.required' => '退勤時間を入力してください',
-            'new_clock_out.date_format' => '退勤時間は"H:i"形式で入力してください',
+            'new_clock_out.date_format' => '退勤時間は HH:MM 形式で入力してください',
             'new_clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
-            'new_break_in.*.date_format' => '休憩時間は"H:i"形式で入力してください',
-            'new_break_out.*.date_format' => '休憩時間は"H:i"形式で入力してください',
+            'new_break_in.*.date_format' => '休憩時間は HH:MM 形式で入力してください',
+            'new_break_out.*.date_format' => '休憩時間は HH:MM 形式で入力してください',
             'comment.required' => '備考を記入してください',
         ];
     }
