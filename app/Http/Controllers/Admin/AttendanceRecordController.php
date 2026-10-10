@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\RestoresBreakInput;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Models\AttendanceRecord;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class AttendanceRecordController extends Controller
 {
+    use RestoresBreakInput;
+
     /**
      * 日次の勤怠一覧（全スタッフ）。?date=YYYY-MM-DD の日の勤怠と、そのスタッフを取得する。
      * 休憩の合計を求めるため breaks を eager load する（N+1 防止）。
@@ -68,16 +71,7 @@ class AttendanceRecordController extends Controller
         ])->all();
 
         // バリデーションエラーで戻ってきたときは、入力内容を復元する（Blade側はold()を使わないため）
-        if (old('new_break_in') !== null) {
-            $breaks = collect(old('new_break_in'))
-                ->map(fn (mixed $in, int|string $i) => ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''])
-                // 末尾の空行はBladeが追加入力用に出すので取り除く（後ろから空行を読み飛ばす）
-                ->reverse()
-                ->skipWhile(fn (array $break) => $break === ['break_in' => '', 'break_out' => ''])
-                ->reverse()
-                ->values()
-                ->all();
-        }
+        $breaks = $this->restoreBreaksFromOldInput() ?? $breaks;
 
         return view('admin.admin-detail', [
             'user' => $record->user,
