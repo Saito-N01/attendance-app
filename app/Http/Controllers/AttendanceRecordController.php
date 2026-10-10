@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Admin\AttendanceRecordController as AdminAttendanceRecordController;
+use App\Http\Controllers\Concerns\RestoresBreakInput;
 use App\Http\Requests\UpdateAttendanceRequest;
 use App\Models\Application;
 use App\Models\AttendanceRecord;
@@ -16,6 +17,8 @@ use Illuminate\View\View;
 
 class AttendanceRecordController extends Controller
 {
+    use RestoresBreakInput;
+
     /**
      * 打刻画面を表示する。今日の勤怠から現在のステータス（勤務外／出勤中／休憩中／退勤済）を求めて渡す。
      */
@@ -186,16 +189,7 @@ class AttendanceRecordController extends Controller
             ])->all();
 
             // バリデーションエラーで戻ってきたときは、入力内容を復元する（Blade側はold()を使わないため）
-            if (old('new_break_in') !== null) {
-                $breaks = collect(old('new_break_in'))
-                    ->map(fn (mixed $in, int|string $i) => ['break_in' => $in ?? '', 'break_out' => old("new_break_out.$i") ?? ''])
-                    // 末尾の空行はBladeが追加入力用に出すので取り除く（後ろから空行を読み飛ばす）
-                    ->reverse()
-                    ->skipWhile(fn (array $break) => $break === ['break_in' => '', 'break_out' => ''])
-                    ->reverse()
-                    ->values()
-                    ->all();
-            }
+            $breaks = $this->restoreBreaksFromOldInput() ?? $breaks;
         }
 
         return view('user.user-detail', [
