@@ -54,6 +54,63 @@ trait InteractsWithAttendance
         return $this->post('/attendance', ['action' => $action]);
     }
 
+    /** 管理者ユーザー（admin_status = true）を作成してログインする */
+    protected function loginAsAdmin(): User
+    {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin);
+
+        return $admin;
+    }
+
+    /**
+     * 指定した日の勤怠を、出勤・退勤・休憩つきで用意する。
+     *
+     * @param  list<array{0: string, 1: string}>  $breaks  [休憩入, 休憩戻] の組
+     */
+    protected function createRecord(
+        User $user,
+        string $date,
+        string $clockIn = '09:00',
+        string $clockOut = '18:00',
+        array $breaks = [],
+    ): AttendanceRecord {
+        $record = AttendanceRecord::create([
+            'user_id' => $user->id,
+            'date' => $date,
+            'clock_in' => $clockIn,
+            'clock_out' => $clockOut,
+        ]);
+
+        foreach ($breaks as [$in, $out]) {
+            $record->breaks()->create(['break_in' => $in, 'break_out' => $out]);
+        }
+
+        return $record;
+    }
+
+    /**
+     * 勤怠詳細の修正フォームに送る、正しい入力値一式。各テストで1項目だけ上書きして使う。
+     *
+     * @return array<string, mixed>
+     */
+    protected function correctionInput(array $override = []): array
+    {
+        return array_merge([
+            'new_clock_in' => '09:30',
+            'new_clock_out' => '18:30',
+            'new_break_in' => [0 => '12:15'],
+            'new_break_out' => [0 => '13:15'],
+            'comment' => '電車遅延のため',
+        ], $override);
+    }
+
+    /** 勤怠詳細画面から修正申請（保存処理）を行う */
+    protected function submitCorrection(AttendanceRecord $record, array $override = []): TestResponse
+    {
+        return $this->post('/attendance/'.$record->id, $this->correctionInput($override));
+    }
+
     /**
      * DBに保存された時刻が「時:分」として期待どおりかを確認する。
      * TIME列は MySQL だと 09:05:00、SQLite だと書き込んだ 09:05 のまま返るため、先頭の HH:MM で比べる。
