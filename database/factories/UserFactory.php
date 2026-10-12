@@ -34,6 +34,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * 管理者ユーザー（admin_status = true）にする。
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'admin_status' => true,
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
