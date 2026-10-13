@@ -11,9 +11,6 @@ use Tests\TestCase;
 
 /**
  * テストケース一覧 No.11：勤怠詳細情報修正機能（一般ユーザー）
- *
- * 出勤・退勤のエラー文言は、Issue の補足どおり FN029 に従う
- * （シートの「出勤時間が不適切な値です」ではなく「出勤時間もしくは退勤時間が不適切な値です」）。
  */
 class AttendanceCorrectionTest extends TestCase
 {
@@ -24,7 +21,7 @@ class AttendanceCorrectionTest extends TestCase
 
     private AttendanceRecord $record;
 
-    /** 手順1：勤怠情報が登録されたユーザーにログインする（勤務 09:00〜18:00、休憩 12:00〜13:00） */
+    /** 勤怠情報が登録されたユーザーにログインする（勤務 09:00〜18:00、休憩 12:00〜13:00） */
     protected function setUp(): void
     {
         parent::setUp();
@@ -35,7 +32,7 @@ class AttendanceCorrectionTest extends TestCase
         $this->record = $this->createRecord($this->user, '2026-10-10', '09:00', '18:00', [['12:00', '13:00']]);
     }
 
-    /** 勤怠詳細ページ（手順2）で不正な値を保存し、エラーが画面に表示されることまで確認する */
+    /** 勤怠詳細ページで不正な値を保存し、エラーが画面に表示されることまで確認する */
     private function assertErrorShown(array $override, string $key, string $message): void
     {
         $url = '/attendance/'.$this->record->id;

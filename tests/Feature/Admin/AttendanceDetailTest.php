@@ -23,7 +23,7 @@ class AttendanceDetailTest extends TestCase
 
     private string $detailUrl;
 
-    /** 手順1・2：管理者でログインし、スタッフの勤怠詳細ページを開ける状態にする */
+    /** 管理者でログインし、スタッフの勤怠詳細ページを開ける状態にする */
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,7 +61,7 @@ class AttendanceDetailTest extends TestCase
     }
 
     /**
-     * 手順3・4：不正な値で保存処理をし、元の詳細画面に戻ってエラーが表示されること、
+     * 不正な値で保存処理をし、元の詳細画面に戻ってエラーが表示されること、
      * 勤怠は変更されないことを確認する。
      */
     private function assertErrorShown(array $override, string $key, string $message): void

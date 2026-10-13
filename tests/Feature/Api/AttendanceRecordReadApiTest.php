@@ -9,7 +9,7 @@ use Tests\Concerns\InteractsWithAttendance;
 use Tests\TestCase;
 
 /**
- * テストケース一覧 No.17：★ 公開API 読み取り系（認証不要）
+ * テストケース一覧 No.17：公開API 読み取り系（認証不要）
  */
 class AttendanceRecordReadApiTest extends TestCase
 {

@@ -18,7 +18,7 @@ class AttendanceDetailTest extends TestCase
 
     private AttendanceRecord $record;
 
-    /** 手順1・2：勤怠情報が登録されたユーザーにログインし、その日の勤怠詳細ページを開ける状態にする */
+    /** 勤怠情報が登録されたユーザーにログインし、その日の勤怠詳細ページを開ける状態にする */
     protected function setUp(): void
     {
         parent::setUp();
