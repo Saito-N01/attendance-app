@@ -25,7 +25,7 @@ class CorrectionRequestTest extends TestCase
 
     private AttendanceRecord $suzukiRecord;
 
-    /** 手順1：管理者ユーザーにログインする（スタッフ2人の勤怠：山田 10/10、鈴木 10/11） */
+    /** 管理者ユーザーにログインする（スタッフ2人の勤怠：山田 10/10、鈴木 10/11） */
     protected function setUp(): void
     {
         parent::setUp();

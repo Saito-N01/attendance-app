@@ -9,7 +9,7 @@ use Tests\Concerns\InteractsWithAttendance;
 use Tests\TestCase;
 
 /**
- * テストケース一覧 No.18：★ 公開API 書き込み系（Sanctum 認証済みで実行）
+ * テストケース一覧 No.18：公開API 書き込み系（Sanctum 認証済みで実行）
  */
 class AttendanceRecordWriteApiTest extends TestCase
 {

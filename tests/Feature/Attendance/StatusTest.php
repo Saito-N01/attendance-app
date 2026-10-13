@@ -8,8 +8,6 @@ use Tests\TestCase;
 
 /**
  * テストケース一覧 No.5：ステータス確認機能
- *
- * ステータス名は FN019 に従う（勤務外／出勤中／休憩中／退勤済）。
  */
 class StatusTest extends TestCase
 {

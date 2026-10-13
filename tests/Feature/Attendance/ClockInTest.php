@@ -9,8 +9,6 @@ use Tests\TestCase;
 
 /**
  * テストケース一覧 No.6：出勤機能
- *
- * ステータス名は FN019 に従い、シートの「勤務中」は「出勤中」で確認する。
  */
 class ClockInTest extends TestCase
 {

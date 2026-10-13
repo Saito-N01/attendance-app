@@ -20,7 +20,7 @@ class AttendanceListTest extends TestCase
         parent::setUp();
 
         $this->setNow('2026-10-15 10:00:00'); // 当日は 2026年10月15日
-        $this->loginAsAdmin(); // 手順1：管理者ユーザーにログインする
+        $this->loginAsAdmin(); // 管理者ユーザーにログインする
     }
 
     /** その日になされた全ユーザーの勤怠情報が正確に確認できる */
@@ -40,8 +40,16 @@ class AttendanceListTest extends TestCase
         // 当日の2人が、名前・出勤・退勤・休憩・合計とともに表示される
         // （山田：9:00 − 休憩1:00 = 8:00／鈴木：休憩なし 0:00、勤務 9:00）
         $response->assertSeeInOrder(array_map($this->cellHtml(...), [
-            '山田 花子', '09:01', '18:01', '1:00', '8:00',
-            '鈴木 次郎', '10:02', '19:02', '0:00', '9:00',
+            '山田 花子',
+            '09:01',
+            '18:01',
+            '1:00',
+            '8:00',
+            '鈴木 次郎',
+            '10:02',
+            '19:02',
+            '0:00',
+            '9:00',
         ]), false);
         // 前日だけ勤怠があるユーザーは表示されない
         $response->assertDontSee('佐藤 三郎');

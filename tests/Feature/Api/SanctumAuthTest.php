@@ -9,7 +9,7 @@ use Tests\Concerns\InteractsWithAttendance;
 use Tests\TestCase;
 
 /**
- * テストケース一覧 No.19：★ Sanctum 認証
+ * テストケース一覧 No.19：Sanctum 認証
  */
 class SanctumAuthTest extends TestCase
 {

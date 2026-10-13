@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 /**
- * テストケース一覧 No.16：★ メール認証機能
+ * テストケース一覧 No.16：メール認証機能
  *
  * 認証メールの「送信」は Notification::fake() で、本物のメールサーバーを使わずに検証する。
  * 認証リンクは本番と同じ「署名付きURL」を URL::temporarySignedRoute で生成して開く。
