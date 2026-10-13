@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use App\Models\Application;
 use App\Models\AttendanceRecord;
 use App\Models\User;
 use Carbon\Carbon;
@@ -87,6 +88,43 @@ trait InteractsWithAttendance
         }
 
         return $record;
+    }
+
+    /**
+     * 修正申請を、休憩つきで直接用意する（申請の作成フローそのものではなく、一覧・承認の確認用）。
+     *
+     * @param  list<array{0: string, 1: string}>  $breaks  [休憩入, 休憩戻] の組
+     */
+    protected function createCorrectionApplication(
+        AttendanceRecord $record,
+        string $comment,
+        int $status = Application::STATUS_PENDING,
+        array $breaks = [['12:15', '13:15']],
+        string $clockIn = '09:30',
+        string $clockOut = '18:30',
+    ): Application {
+        $application = Application::create([
+            'attendance_record_id' => $record->id,
+            'user_id' => $record->user_id,
+            'date' => Carbon::parse($record->date)->toDateString(),
+            'new_clock_in' => $clockIn,
+            'new_clock_out' => $clockOut,
+            'comment' => $comment,
+            'status' => $status,
+            'approved_at' => $status === Application::STATUS_APPROVED ? now() : null,
+        ]);
+
+        foreach ($breaks as [$in, $out]) {
+            $application->breaks()->create(['new_break_in' => $in, 'new_break_out' => $out]);
+        }
+
+        return $application;
+    }
+
+    /** 一覧表のセル（<p class="table__description--item">値</p>）のHTML */
+    protected function cellHtml(string $value): string
+    {
+        return '<p class="table__description--item">'.$value.'</p>';
     }
 
     /**
