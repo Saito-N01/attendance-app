@@ -97,4 +97,27 @@ class AdminLoginTest extends TestCase
         $response->assertSessionHasErrors(['email' => 'ログイン情報が登録されていません']);
         $this->assertGuest();
     }
+
+    /** 補足：管理者の認証情報でログインすると、管理者の勤怠一覧へ遷移する */
+    public function test_admin_can_login_and_is_redirected_to_attendance_list(): void
+    {
+        $response = $this->post('/admin/login', [
+            'email' => self::EMAIL,
+            'password' => self::PASSWORD,
+        ]);
+
+        $response->assertRedirect('/admin/attendance/list');
+        $this->assertAuthenticated();
+    }
+
+    /** 補足：ヘッダーのボタンからログアウトすると、管理者ログイン画面へ遷移する（FN017） */
+    public function test_admin_can_logout_and_is_redirected_to_admin_login(): void
+    {
+        $admin = User::where('email', self::EMAIL)->first();
+
+        $response = $this->actingAs($admin)->post('/admin/logout');
+
+        $response->assertRedirect('/admin/login');
+        $this->assertGuest();
+    }
 }

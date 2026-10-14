@@ -62,4 +62,27 @@ class UserLoginTest extends TestCase
         $response->assertSessionHasErrors(['email' => 'ログイン情報が登録されていません']);
         $this->assertGuest();
     }
+
+    /** 補足：一般ユーザーは打刻画面へ遷移する（管理者ログインとの切り替えで変わっていないことの確認） */
+    public function test_user_can_login_and_is_redirected_to_attendance(): void
+    {
+        $response = $this->post('/login', [
+            'email' => self::EMAIL,
+            'password' => self::PASSWORD,
+        ]);
+
+        $response->assertRedirect('/attendance');
+        $this->assertAuthenticated();
+    }
+
+    /** 補足：ヘッダーのボタンからログアウトすると、ログイン画面へ遷移する（FN013） */
+    public function test_user_can_logout_and_is_redirected_to_login(): void
+    {
+        $user = User::where('email', self::EMAIL)->first();
+
+        $response = $this->actingAs($user)->post('/logout');
+
+        $response->assertRedirect('/login');
+        $this->assertGuest();
+    }
 }

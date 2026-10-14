@@ -3,17 +3,23 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Http\Requests\AdminLoginRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Responses\EmailVerificationNotificationSentResponse;
+use App\Http\Responses\LoginResponse;
 use App\Http\Responses\LogoutResponse;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationNotificationSentResponseContract;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -34,15 +40,32 @@ class FortifyServiceProvider extends ServiceProvider
             return view('user.register');
         });
 
-        Fortify::loginView(function () {
-            return view('user.user-login');
+        // 一般ユーザー（/login）と管理者（/admin/login）で同じ Fortify のコントローラーを使い、
+        // 画面・バリデーション・認証条件だけを /admin/* かどうかで切り替える
+        Fortify::loginView(function (Request $request) {
+            return $request->is('admin/*') ? view('admin.admin-login') : view('user.user-login');
         });
 
-        $this->app->singleton(
-            \Laravel\Fortify\Http\Requests\LoginRequest::class,
-            LoginRequest::class
-        );
+        $this->app->bind(FortifyLoginRequest::class, function ($app) {
+            return $app['request']->is('admin/*') ? new AdminLoginRequest : new LoginRequest;
+        });
 
+        // 管理者ログインでは admin_status = true のユーザーだけを認証する（一致しなければ「ログイン情報が登録されていません」）
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = User::where('email', $request->input('email'))->first();
+
+            if (! $user || ! Hash::check($request->input('password'), $user->password)) {
+                return null;
+            }
+
+            if ($request->is('admin/*') && ! $user->admin_status) {
+                return null;
+            }
+
+            return $user;
+        });
+
+        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
 
         Fortify::verifyEmailView(function () {
