@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // CSS 内の url('/images/...') は、開発サーバー（npm run dev）では Vite のサーバー（:5173）に取りに行く。
+  // laravel-vite-plugin は既定で public/ を配信しないため、開発時だけ public/ を配信して画像を表示する。
+  // （本番ビルドでは public/build に public/ を丸ごとコピーしてしまうため、false のままにする）
+  publicDir: command === 'serve' ? 'public' : false,
   plugins: [
     laravel({
       input: [
@@ -27,4 +31,4 @@ export default defineConfig({
       refresh: true,
     }),
   ],
-});
+}));
