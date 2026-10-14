@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCor
 use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\AttendanceReportController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StampCorrectionRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// ヘッダーのロゴ（/）：ログイン状態に応じて最初の画面へ振り分ける
+Route::get('/', HomeController::class)->name('home');
 
 // 管理者
 Route::prefix('admin')->name('admin.')->group(function () {
