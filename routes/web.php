@@ -3,12 +3,12 @@
 use App\Http\Controllers\Admin\AttendanceRecordController as AdminAttendanceRecordController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampCorrectionRequestController;
-use App\Http\Controllers\AdminAuthenticatedSessionController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StampCorrectionRequestController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,13 +26,15 @@ Route::get('/', HomeController::class)->name('home');
 
 // 管理者
 Route::prefix('admin')->name('admin.')->group(function () {
+    // ログイン・ログアウトは一般ユーザーと同じ Fortify のコントローラーを使う。
+    // 管理者かどうかの判定・画面・遷移先は FortifyServiceProvider で /admin/* かどうかにより切り替える
     Route::middleware('guest')->group(function () {
-        Route::get('login', [AdminAuthenticatedSessionController::class, 'create'])->name('login');
-        Route::post('login', [AdminAuthenticatedSessionController::class, 'store']);
+        Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+        Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login');
     });
 
     Route::middleware('admin')->group(function () {
-        Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])->name('logout');
+        Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::get('attendance/list', [AdminAttendanceRecordController::class, 'index'])->name('attendance.list');
         Route::get('attendance/{id}', [AdminAttendanceRecordController::class, 'show'])->whereNumber('id')->name('attendance.show');
         Route::get('staff/list', [StaffController::class, 'index'])->name('staff.list');
