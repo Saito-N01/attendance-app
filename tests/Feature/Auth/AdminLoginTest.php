@@ -29,6 +29,19 @@ class AdminLoginTest extends TestCase
         ]);
     }
 
+    /** 補足：管理者ログイン画面が、共通レイアウト（ヘッダーのロゴ）つきで表示される */
+    public function test_login_page_is_rendered_with_admin_layout(): void
+    {
+        $response = $this->get('/admin/login');
+
+        $response->assertOk();
+        $response->assertSee('管理者ログイン');
+        $response->assertSee('<form class="form" action="/admin/login" method="post" novalidate>', false);
+        // 共通レイアウト（layouts.admin-app）のヘッダー。未ログインなのでナビゲーションは出ない
+        $response->assertSee('<a class="header__logo" href="/">', false);
+        $response->assertDontSee('スタッフ一覧');
+    }
+
     /** メールアドレスが未入力の場合、バリデーションメッセージが表示される */
     public function test_email_is_required(): void
     {
